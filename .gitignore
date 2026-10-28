@@ -1,0 +1,38 @@
+# ===== Data (large + licensed, never commit) =====
+data/
+*.zip
+*.tar
+*.tar.gz
+
+# ===== Model weights & training outputs =====
+*.pt
+*.pth
+*.ckpt
+checkpoints/
+outputs/
+runs/
+
+# ===== Experiment tracking =====
+wandb/
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# ===== Jupyter =====
+.ipynb_checkpoints/
+
+# ===== Virtual environments & secrets =====
+.venv/
+venv/
+.env
+kaggle.json
+
+# ===== Editors & OS =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
