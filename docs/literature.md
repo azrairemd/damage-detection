@@ -29,11 +29,11 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 
 ## B. Architecture
 
-### ⬜ Ronneberger et al. (2015) — U-Net: Convolutional Networks for Biomedical Image Segmentation
-- **Problem:**
-- **Method:**
-- **Key result:**
-- **Relevance to this project:**
+### ✅ Ronneberger et al. (2015) — U-Net: Convolutional Networks for Biomedical Image Segmentation
+- **Problem:** Pixel-level segmentation (assigning a class to every pixel) with very few annotated training images, as is common in biomedical imaging.
+- **Method:** An encoder–decoder architecture with a U shape. A contracting path (encoder) captures context by repeatedly downsampling, and a symmetric expanding path (decoder) upsamples back to the input resolution for precise localization. Skip connections concatenate encoder features with the decoder features at the same resolution. Strong data augmentation (including elastic deformations) compensates for the small training set.
+- **Key result:** Outperformed the previous best method on the ISBI challenge for neuronal structure segmentation in electron microscopy and won the ISBI cell tracking challenge 2015 by a large margin. Segmenting a 512×512 image takes less than a second on a GPU.
+- **Relevance to this project:** Our decoder follows the U-Net design. Skip connections are essential for drawing precise boundaries of small objects such as buildings. In our Siamese model, the skip connections carry the fused pre/post features at each scale. Unlike the original U-Net, we use an ImageNet-pretrained ResNet34 encoder and predict 5 classes.
 
 ### ⬜ He et al. (2016) — Deep Residual Learning for Image Recognition
 - **Problem:**
@@ -125,7 +125,7 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 | Fusion of pre/post features (concat / difference) | Weber & Kané (2020) |
 | Focal Loss (class imbalance) | Weber & Kané (2020) |
 | Early stopping with patience | Weber & Kané (2020) |
-| U-Net decoder | |
+| U-Net decoder | Ronneberger et al. (2015) |
 | ResNet34 encoder (ImageNet pretrained) | |
 | Focal Loss (class imbalance) | |
 | Dice Loss | |
