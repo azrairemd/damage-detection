@@ -27,12 +27,12 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 **Hedef:** Repo, ortam ve xBD'ye erişim hazır.
 
-- [ ] Klasör iskeletini oluştur
-- [ ] `.gitignore` (veri, ağırlıklar, `__pycache__`, `.ipynb_checkpoints`, `wandb/`)
-- [ ] `requirements.txt`: `torch`, `segmentation-models-pytorch`, `albumentations`, `rasterio`/`shapely`, `opencv-python`, `scikit-learn`, `grad-cam`, `pyyaml`, `pandas`, `matplotlib`
-- [ ] `README.md`: proje özeti, kurulum, ilerleme günlüğü bölümü
-- [ ] xBD'ye Kaggle'da eriş (mevcut dataset veya kendi yüklemen)
-- [ ] Kaggle notebook'ta repoyu `git clone` + `pip install -e .` ile çalıştırmayı test et
+- [x] Klasör iskeletini oluştur
+- [x] `.gitignore` (veri, ağırlıklar, `__pycache__`, `.ipynb_checkpoints`, `wandb/`)
+- [x] `requirements.txt`: `torch`, `segmentation-models-pytorch`, `albumentations`, `rasterio`/`shapely`, `opencv-python`, `scikit-learn`, `grad-cam`, `pyyaml`, `pandas`, `matplotlib`
+- [x] `README.md`: proje özeti, kurulum, ilerleme günlüğü bölümü
+- [x] xBD'ye Kaggle'da eriş (mevcut dataset veya kendi yüklemen)
+- [x] Kaggle notebook'ta repoyu `git clone` + `pip install -e .` ile çalıştırmayı test et
 
 **Çıktı:** Çalışan boş iskelet, veri erişimi, `docs/data_sources.md`
 **Bitirme kriteri:** Kaggle notebook'u repodan bir fonksiyon import edip xBD'den bir görüntü çifti gösterebiliyor.
