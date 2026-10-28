@@ -1,0 +1,15 @@
+torch
+torchvision
+segmentation-models-pytorch
+albumentations
+grad-cam
+numpy
+pandas
+scikit-learn
+opencv-python
+shapely
+Pillow
+pyyaml
+tqdm
+matplotlib
+pytest
