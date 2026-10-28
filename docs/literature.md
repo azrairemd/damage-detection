@@ -35,11 +35,11 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 - **Key result:** Outperformed the previous best method on the ISBI challenge for neuronal structure segmentation in electron microscopy and won the ISBI cell tracking challenge 2015 by a large margin. Segmenting a 512×512 image takes less than a second on a GPU.
 - **Relevance to this project:** Our decoder follows the U-Net design. Skip connections are essential for drawing precise boundaries of small objects such as buildings. In our Siamese model, the skip connections carry the fused pre/post features at each scale. Unlike the original U-Net, we use an ImageNet-pretrained ResNet34 encoder and predict 5 classes.
 
-### ⬜ He et al. (2016) — Deep Residual Learning for Image Recognition
-- **Problem:**
-- **Method:**
-- **Key result:**
-- **Relevance to this project:**
+### ✅ He et al. (2016) — Deep Residual Learning for Image Recognition
+- **Problem:** Very deep networks suffer from the degradation problem: adding more layers increases even the training error, because deep plain networks are hard to optimize.
+- **Method:** Residual learning. Each block learns a residual function F(x), and a shortcut connection adds the block's input to its output: F(x) + x. Shortcuts make it easy to learn identity mappings and help gradients flow through very deep networks. The paper defines a family of networks (ResNet-18/34/50/101/152).
+- **Key result:** Networks up to 152 layers were trained successfully, and deeper networks gave higher accuracy. ResNet won 1st place in the ILSVRC 2015 classification task, and its features transferred well to detection and segmentation tasks.
+- **Relevance to this project:** We use an ImageNet-pretrained ResNet34 as the encoder of our Siamese U-Net. Pretrained weights provide general visual features (edges, textures, shapes) and reduce the amount of training data needed. ResNet34 offers a good trade-off between capacity and computational cost on Kaggle GPUs. Its multi-scale feature maps connect naturally to the U-Net skip connections.
 
 ### ⬜ Daudt, Le Saux & Boulch (2018) — Fully Convolutional Siamese Networks for Change Detection
 - **Problem:**
@@ -126,7 +126,7 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 | Focal Loss (class imbalance) | Weber & Kané (2020) |
 | Early stopping with patience | Weber & Kané (2020) |
 | U-Net decoder | Ronneberger et al. (2015) |
-| ResNet34 encoder (ImageNet pretrained) | |
+| ResNet34 encoder (ImageNet pretrained) | He et al. (2016) |
 | Focal Loss (class imbalance) | |
 | Dice Loss | |
 | Early stopping with patience | |
