@@ -27,12 +27,10 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 **Hedef:** Repo, ortam ve xBD'ye erişim hazır.
 
-- [ ] GitHub reposunu aç, danışmanı collaborator olarak ekle
 - [ ] Klasör iskeletini oluştur
 - [ ] `.gitignore` (veri, ağırlıklar, `__pycache__`, `.ipynb_checkpoints`, `wandb/`)
 - [ ] `requirements.txt`: `torch`, `segmentation-models-pytorch`, `albumentations`, `rasterio`/`shapely`, `opencv-python`, `scikit-learn`, `grad-cam`, `pyyaml`, `pandas`, `matplotlib`
 - [ ] `README.md`: proje özeti, kurulum, ilerleme günlüğü bölümü
-- [ ] GitHub'da her faz için bir **Milestone**, her görev için bir **Issue** aç
 - [ ] xBD'ye Kaggle'da eriş (mevcut dataset veya kendi yüklemen)
 - [ ] Kaggle notebook'ta repoyu `git clone` + `pip install -e .` ile çalıştırmayı test et
 
