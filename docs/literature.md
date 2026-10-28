@@ -20,12 +20,11 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 - **Key result:** A two-stage baseline (a U-Net-like model for building localization, followed by a CNN classifier applied to each building crop) localizes buildings well, but four-level damage classification remains much harder, largely due to class imbalance.
 - **Relevance to this project:** xBD is our training and evaluation dataset. Its damage scale defines our 5-class mask (background + 4 damage levels), and un-classified buildings are excluded from the loss (ignore index 255). The class imbalance motivates our Focal + Dice loss. Unlike the two-stage baseline, we use a single-stage Siamese U-Net. Label noise from manual annotation is noted as a limitation.
 
-### ⬜ Weber & Kané (2020) — Building Disaster Damage Assessment in Satellite Imagery with Multi-Temporal Fusion
-- **Problem:**
-- **Method:**
-- **Key result:**
-- **Relevance to this project:**
-
+### ✅ Weber & Kané (2020) — Building Disaster Damage Assessment in Satellite Imagery with Multi-Temporal Fusion
+- **Problem:** How to frame and train a model on xBD to substantially improve over the two-stage xBD baseline.
+- **Method:** A single network (Mask R-CNN with FPN, ImageNet-pretrained) jointly predicts a 5-class per-pixel map (0 = no building, 1–4 = damage levels). Pre- and post-disaster images are processed separately with shared weights, and their features are concatenated before the semantic segmentation head. Each 1024×1024 image is split into four 512×512 quadrants, and the cross-entropy loss is weighted inversely proportional to class frequency.
+- **Key result:** Overall F1 of 0.741 compared to 0.265 for the xBD baseline (holdout set). Minor damage remains the hardest class (F1 = 0.493). Feeding pre/post images as a single 6-channel input or as a difference image performed poorly. When trained too long, the model collapses into predicting only the "no building" class.
+- **Relevance to this project:** Supports our Siamese encoder with shared weights, 512×512 tiling, an imbalance-aware loss and early stopping. It also defines the overall score as 30% localization F1 + 70% damage F1. Our multi-scale fusion of pre/post features follows the future direction suggested by the authors.
 ---
 
 ## B. Architecture
@@ -121,9 +120,11 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 | Design decision | Supporting sources |
 |---|---|
 | Use of the xBD dataset and its damage scale | Gupta et al. (2019) |
-| xView2 score as the main evaluation metric | |
-| Siamese encoder with shared weights | |
-| Fusion of pre/post features (concat / difference) | |
+| xView2 score as the main evaluation metric | Gupta et al. (2019), Weber & Kané (2020) |
+| Siamese encoder with shared weights | Weber & Kané (2020) |
+| Fusion of pre/post features (concat / difference) | Weber & Kané (2020) |
+| Focal Loss (class imbalance) | Weber & Kané (2020) |
+| Early stopping with patience | Weber & Kané (2020) |
 | U-Net decoder | |
 | ResNet34 encoder (ImageNet pretrained) | |
 | Focal Loss (class imbalance) | |
