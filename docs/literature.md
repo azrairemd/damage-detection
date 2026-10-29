@@ -57,11 +57,11 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 
 ## C. Loss Functions
 
-### ⬜ Lin et al. (2017) — Focal Loss for Dense Object Detection
-- **Problem:**
-- **Method:**
-- **Key result:**
-- **Relevance to this project:**
+### ✅ Lin et al. (2017) — Focal Loss for Dense Object Detection
+- **Problem:** In dense object detection, the vast number of easy background examples dominates the cross-entropy loss and overwhelms the few hard examples, which the authors identify as the central cause of the lower accuracy of one-stage detectors.
+- **Method:** Focal Loss adds a modulating factor (1 − p_t)^γ to the cross-entropy loss: FL(p_t) = −α_t (1 − p_t)^γ log(p_t). Well-classified examples (high p_t) are down-weighted, so training focuses on hard, misclassified examples. γ = 0 recovers the standard cross-entropy; α_t is an optional class-balancing weight. A simple one-stage detector, RetinaNet, is designed to evaluate the loss.
+- **Key result:** With γ = 2, Focal Loss improves over α-balanced cross-entropy by 2.9 AP, and changing γ has a much larger effect than changing α. RetinaNet trained with Focal Loss surpasses the accuracy of all previous one-stage and two-stage detectors.
+- **Relevance to this project:** Pixel-wise damage segmentation suffers from the same kind of imbalance: most pixels are background and most buildings are undamaged, while minor damage is both rare and hard. We use Focal Loss with γ = 2 and per-class α weights for our 5 classes, ignoring un-classified pixels (index 255). Its contribution is measured against cross-entropy in ablation A3.
 
 ### ⬜ Milletari et al. (2016) — V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation
 - **Problem:**
@@ -129,7 +129,7 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 | ResNet34 encoder (ImageNet pretrained) | He et al. (2016) |
 | Siamese encoder with shared weights | Daudt et al. (2018), Weber & Kané (2020) |
 | Fusion of pre/post features (concat / difference) | Daudt et al. (2018), Weber & Kané (2020) |
-| Focal Loss (class imbalance) | |
+| Focal Loss (class imbalance) | Lin et al. (2017), Weber & Kané (2020) |
 | Dice Loss | |
 | Early stopping with patience | |
 | Stratified train/val/test split | |
