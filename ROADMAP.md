@@ -43,9 +43,9 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 **Hedef:** Yöntem seçimlerini kaynaklarla gerekçelendirmek.
 
-- [ ] xBD makalesi (Gupta ve ark., 2019) — veri seti, etiket şeması, xView2 metriği
-- [ ] xView2 yarışmasının kazanan çözümleri (Siamese U-Net, iki aşamalı yaklaşımlar)
-- [ ] Focal Loss (Lin ve ark., 2017), Dice Loss
+- [x] xBD makalesi (Gupta ve ark., 2019) — veri seti, etiket şeması, xView2 metriği
+- [x] xView2 yarışmasının kazanan çözümleri (Siamese U-Net, iki aşamalı yaklaşımlar)
+- [x] Focal Loss (Lin ve ark., 2017), Dice Loss
 - [ ] Grad-CAM (Selvaraju ve ark., 2017), segmentasyon için Grad-CAM uyarlamaları
 - [ ] Her kaynak için 3–5 satırlık özet
 
