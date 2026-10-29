@@ -79,12 +79,11 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 - **Key result:** There is a trade-off between training time and generalization: on average, slower criteria improve generalization by about 4% but require about 4 times longer training.
 - **Relevance to this project:** Theoretical background for our early stopping rule. Our patience criterion (stop when the validation xView2 score has not improved for a number of epochs equal to 20% of the maximum number of epochs) is a modern variant of the UP class. Scaling patience with the training length tolerates the noisy validation curve while keeping training time bounded on Kaggle GPUs. The checkpoint with the best validation score (best.pt) is used as the final model.
 
-### ⬜ Kohavi (1995) — A Study of Cross-Validation and Bootstrap for Accuracy Estimation and Model Selection
-- **Problem:**
-- **Method:**
-- **Key result:**
-- **Relevance to this project:**
-
+### ✅ Kohavi (1995) — A Study of Cross-Validation and Bootstrap for Accuracy Estimation and Model Selection
+- **Problem:** Estimating the accuracy of a model and selecting the best model with limited data, where the way the data is split affects the reliability of the estimate.
+- **Method:** A large-scale empirical comparison (over half a million runs of C4.5 and Naive Bayes on real-world datasets) of cross-validation, with different numbers of folds and with or without stratification, and bootstrap, with different numbers of samples. In stratified splitting, each fold preserves the class proportions of the full dataset.
+- **Key result:** For real-world datasets, the best method for model selection is stratified ten-fold cross-validation, even when more folds are computationally affordable.
+- **Relevance to this project:** Supports our use of a stratified split, so that the validation and test sets are representative of the full dataset. Since images contain several damage classes, we stratify by disaster event, which preserves the strongly imbalanced event distribution of xBD in all three subsets. Unlike this study, we use a single 60/20/20 hold-out split instead of cross-validation, because training a deep model multiple times is not feasible with our computational budget.
 ---
 
 ## E. Explainability (XAI)
@@ -132,6 +131,6 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 | Focal Loss (class imbalance) | Lin et al. (2017), Weber & Kané (2020) |
 | Dice Loss | Milletari et al. (2016) |
 | Early stopping with patience | Prechelt (1998), Weber & Kané (2020) |
-| Stratified train/val/test split | |
+| Stratified train/val/test split | Kohavi (1995) |
 | Grad-CAM for segmentation | |
 | Critical evaluation of saliency maps (deletion test) | |
