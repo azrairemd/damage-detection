@@ -41,11 +41,11 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 - **Key result:** Networks up to 152 layers were trained successfully, and deeper networks gave higher accuracy. ResNet won 1st place in the ILSVRC 2015 classification task, and its features transferred well to detection and segmentation tasks.
 - **Relevance to this project:** We use an ImageNet-pretrained ResNet34 as the encoder of our Siamese U-Net. Pretrained weights provide general visual features (edges, textures, shapes) and reduce the amount of training data needed. ResNet34 offers a good trade-off between capacity and computational cost on Kaggle GPUs. Its multi-scale feature maps connect naturally to the U-Net skip connections.
 
-### ⬜ Daudt, Le Saux & Boulch (2018) — Fully Convolutional Siamese Networks for Change Detection
-- **Problem:**
-- **Method:**
-- **Key result:**
-- **Relevance to this project:**
+### ✅ Daudt, Le Saux & Boulch (2018) — Fully Convolutional Siamese Networks for Change Detection
+- **Problem:** Pixel-wise binary change detection (changed / unchanged) between two co-registered images of the same area taken at different times.
+- **Method:** Three U-Net-based fully convolutional architectures: FC-EF (early fusion: the two images are stacked as one input), FC-Siam-conc (two encoder streams with shared weights; their features are concatenated in the skip connections) and FC-Siam-diff (the absolute difference of the two streams' features is passed through the skip connections). All models are trained from scratch.
+- **Key result:** The proposed architectures outperform previous change detection methods while being at least 500 times faster. There is no single best fusion strategy: FC-EF and FC-Siam-diff perform similarly on RGB images (F1 48.89 vs 48.86 on OSCD), while FC-Siam-diff performs best on 13-band multispectral images (F1 57.92).
+- **Relevance to this project:** Main source of our Siamese encoder with shared weights and multi-scale fusion through the skip connections. Since neither fusion strategy dominates, we compare concatenation, difference and both in ablation A2. Unlike this work, we use an ImageNet-pretrained encoder; a Siamese design keeps each stream at 3 channels, so pretrained weights can be used directly, which may explain why early fusion performed poorly in Weber & Kané (2020).
 
 ### ⬜ Zheng et al. (2021) — ChangeOS: Building Damage Assessment with a Deep Object-Based Semantic Change Detection Framework
 - **Problem:**
@@ -127,6 +127,8 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 | Early stopping with patience | Weber & Kané (2020) |
 | U-Net decoder | Ronneberger et al. (2015) |
 | ResNet34 encoder (ImageNet pretrained) | He et al. (2016) |
+| Siamese encoder with shared weights | Daudt et al. (2018), Weber & Kané (2020) |
+| Fusion of pre/post features (concat / difference) | Daudt et al. (2018), Weber & Kané (2020) |
 | Focal Loss (class imbalance) | |
 | Dice Loss | |
 | Early stopping with patience | |
