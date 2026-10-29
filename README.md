@@ -10,23 +10,23 @@ Pixel-level building damage segmentation from pre- and post-disaster satellite i
 
 | Phase | Description | Status |
 |---|---|---|
-| 0 | Setup & data acquisition | ✅ Done |
-| 1 | Literature review | ✅ Done (XAI papers in Phase 8) |
-| 2 | Exploratory data analysis (EDA) | 🚧 In progress |
-| 3 | Preprocessing & stratified split | ⏳ Planned |
-| 4 | Training pipeline | ⏳ Planned |
-| 5 | Baseline model | ⏳ Planned |
-| 6 | Siamese model & ablations | ⏳ Planned |
-| 7 | Test evaluation | ⏳ Planned |
-| 8 | Grad-CAM / XAI | ⏳ Planned |
-| 9 | Fine-tuning on Türkiye  earthquake data | ⏳ Planned |
-| 10 | Report & presentation | ⏳ Planned |
+| 0 | Setup & data acquisition | Done |
+| 1 | Literature review | Done (XAI papers in Phase 8) |
+| 2 | Exploratory data analysis (EDA) | Done |
+| 3 | Preprocessing & stratified split | In progress |
+| 4 | Training pipeline | Planned |
+| 5 | Baseline model | Planned |
+| 6 | Siamese model & ablations | Planned |
+| 7 | Test evaluation | Planned |
+| 8 | Grad-CAM / XAI | Planned |
+| 9 | Fine-tuning on Türkiye earthquake data | Planned |
+| 10 | Report & presentation | Planned |
 
 Detailed tasks for each phase: [ROADMAP.md](ROADMAP.md)
 
 ---
 
-## 🧠 Method
+## Method
 
 - **Input:** A pre-disaster and a post-disaster RGB image of the same area
 - **Model:** Siamese encoder with shared weights → feature fusion at each scale → U-Net decoder
@@ -39,7 +39,7 @@ Detailed tasks for each phase: [ROADMAP.md](ROADMAP.md)
 
 ---
 
-## 🗂️ Dataset
+## Dataset
 
 [xBD](https://xview2.org/) (Gupta et al., 2019): 22,068 high-resolution satellite images (11,034 pre/post pairs, 1024×1024) from 19 disaster events, with building polygons labeled by damage level.
 
@@ -48,7 +48,7 @@ Detailed tasks for each phase: [ROADMAP.md](ROADMAP.md)
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 damage-detection/
@@ -69,7 +69,7 @@ damage-detection/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### On Kaggle
 
