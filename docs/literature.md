@@ -73,11 +73,11 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 
 ## D. Training Protocol
 
-### ⬜ Prechelt (1998) — Early Stopping — But When?
-- **Problem:**
-- **Method:**
-- **Key result:**
-- **Relevance to this project:**
+### ✅ Prechelt (1998) — Early Stopping — But When?
+- **Problem:** Early stopping (stopping training when the validation error starts to increase) is widely used to prevent overfitting, but the stopping criterion is usually chosen in an ad hoc way. In practice, validation error curves are noisy and have multiple local minima, so stopping at the first increase is often premature.
+- **Method:** Three classes of stopping criteria are defined and compared empirically: GL (stop when the generalization loss, the relative increase of the validation error over its minimum so far, exceeds a threshold), PQ (GL divided by the training progress), and UP (stop when the validation error has increased for several successive evaluation periods). The weights with the lowest validation error are used as the final model.
+- **Key result:** There is a trade-off between training time and generalization: on average, slower criteria improve generalization by about 4% but require about 4 times longer training.
+- **Relevance to this project:** Theoretical background for our early stopping rule. Our patience criterion (stop when the validation xView2 score has not improved for a number of epochs equal to 20% of the maximum number of epochs) is a modern variant of the UP class. Scaling patience with the training length tolerates the noisy validation curve while keeping training time bounded on Kaggle GPUs. The checkpoint with the best validation score (best.pt) is used as the final model.
 
 ### ⬜ Kohavi (1995) — A Study of Cross-Validation and Bootstrap for Accuracy Estimation and Model Selection
 - **Problem:**
@@ -131,7 +131,7 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 | Fusion of pre/post features (concat / difference) | Daudt et al. (2018), Weber & Kané (2020) |
 | Focal Loss (class imbalance) | Lin et al. (2017), Weber & Kané (2020) |
 | Dice Loss | Milletari et al. (2016) |
-| Early stopping with patience | |
+| Early stopping with patience | Prechelt (1998), Weber & Kané (2020) |
 | Stratified train/val/test split | |
 | Grad-CAM for segmentation | |
 | Critical evaluation of saliency maps (deletion test) | |
