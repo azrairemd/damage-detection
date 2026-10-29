@@ -63,11 +63,11 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 - **Key result:** With γ = 2, Focal Loss improves over α-balanced cross-entropy by 2.9 AP, and changing γ has a much larger effect than changing α. RetinaNet trained with Focal Loss surpasses the accuracy of all previous one-stage and two-stage detectors.
 - **Relevance to this project:** Pixel-wise damage segmentation suffers from the same kind of imbalance: most pixels are background and most buildings are undamaged, while minor damage is both rare and hard. We use Focal Loss with γ = 2 and per-class α weights for our 5 classes, ignoring un-classified pixels (index 255). Its contribution is measured against cross-entropy in ablation A3.
 
-### ⬜ Milletari et al. (2016) — V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation
-- **Problem:**
-- **Method:**
-- **Key result:**
-- **Relevance to this project:**
+### ✅ Milletari et al. (2016) — V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation
+- **Problem:** Segmentation of 3D medical volumes (prostate MRI), where the structure of interest occupies a very small region and there is a strong imbalance between foreground and background voxels.
+- **Method:** A volumetric fully convolutional network trained end-to-end, with a novel objective function based on the Dice coefficient, which measures the overlap between the prediction and the ground truth (Dice loss = 1 − Dice). Because Dice is a ratio computed per structure, small structures contribute as much as large ones, without explicit re-weighting. Random non-linear transformations and histogram matching are used for data augmentation.
+- **Key result:** The approach achieves good performance on challenging test data while requiring only a fraction of the processing time of previous methods.
+- **Relevance to this project:** Source of the Dice loss, which we combine with Focal Loss (L = λ·Focal + (1 − λ)·Dice). Dice handles class imbalance from a different angle than Focal Loss and is equivalent to the F1 score, so it directly optimizes the quantity used in the xView2 metric. We extend it to 5 classes by averaging per-class Dice scores, excluding un-classified pixels (index 255). The benefit of the combination is evaluated in ablations A3 and A4.
 
 ---
 
@@ -130,7 +130,7 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 | Siamese encoder with shared weights | Daudt et al. (2018), Weber & Kané (2020) |
 | Fusion of pre/post features (concat / difference) | Daudt et al. (2018), Weber & Kané (2020) |
 | Focal Loss (class imbalance) | Lin et al. (2017), Weber & Kané (2020) |
-| Dice Loss | |
+| Dice Loss | Milletari et al. (2016) |
 | Early stopping with patience | |
 | Stratified train/val/test split | |
 | Grad-CAM for segmentation | |
