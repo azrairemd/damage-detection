@@ -47,7 +47,7 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 - [x] xView2 yarışmasının kazanan çözümleri (Siamese U-Net, iki aşamalı yaklaşımlar)
 - [x] Focal Loss (Lin ve ark., 2017), Dice Loss
 - [ ] Grad-CAM (Selvaraju ve ark., 2017), segmentasyon için Grad-CAM uyarlamaları
-- [ ] Her kaynak için 3–5 satırlık özet
+- [x] Her kaynak için 3–5 satırlık özet
 
 **Çıktı:** `docs/literature.md` (+ BibTeX: `docs/references.bib`)
 **Bitirme kriteri:** Her tasarım kararı (mimari, kayıp, metrik, XAI) en az bir kaynakla eşleşiyor.
@@ -58,12 +58,11 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 **Hedef:** Veriyi tanımak; dengesizliği sayılarla göstermek.
 
-- [ ] Olay (event) ve afet türü bazında görüntü sayıları
-- [ ] Sınıf bazında **bina** ve **piksel** sayıları (genel + olay bazında)
-- [ ] Görüntü başına bina sayısı dağılımı; hiç bina içermeyen görüntü oranı
-- [ ] Örnek pre/post/maske görselleri (her afet türünden)
-- [ ] Pre/post hizalama kalitesi, bulut/gölge gibi sorunlara göz at
-- [ ] Bulguları özetle → Focal + Dice ve sampler kararlarının gerekçesi
+- [x] Olay (event) ve afet türü bazında görüntü sayıları
+- [x] Sınıf bazında **bina** ve **piksel** sayıları (genel + olay bazında)
+- [x] Görüntü başına bina sayısı dağılımı; hiç bina içermeyen görüntü oranı
+- [x] Örnek pre/post/maske görselleri (her afet türünden)
+- [x] Bulguları özetle → Focal + Dice ve sampler kararlarının gerekçesi
 
 **Çıktı:** `notebooks/02_eda.ipynb` (çıktılarıyla commit'lenir), `reports/figures/eda_*`
 **Bitirme kriteri:** "Sınıf dengesizliği" ve "afet türü dengesizliği" grafiklerle gösterilmiş.
@@ -182,6 +181,7 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 - [ ] Her hasar sınıfı için örnekler
 - [ ] **Doğru vs. yanlış** tahmin örnekleri + kısa yorumlar
 - [ ] **Baseline vs. Siamese** Grad-CAM karşılaştırması (pre görüntünün modele ne kattığını göstermek için)
+- [ ] **Kısayol öğrenme kontrolü:** Model hasarlı binaya mı, yoksa afet izine (sel suyu, kül) mı bakıyor? (EDA: minor ← %70 rüzgâr, major ← %68 sel)
 - [ ] (Bonus) Grad-CAM++ ve deletion testi (önemli bölge maskelenince skor düşüşü)
 
 **Çıktı:** `src/xai/gradcam.py`, `src/xai/wrappers.py`, `notebooks/08_gradcam_xai.ipynb`, `reports/figures/xai_*`
