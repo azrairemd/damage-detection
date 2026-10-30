@@ -47,3 +47,5 @@ def save_masks(root, df, mask_root):
 
         path = get_mask_path(mask_root, row["folder"], row["image_id"])
         path.parent.mkdir(parents=True, exist_ok=True)
+
+        success = cv2.imwrite(str(path), mask)
