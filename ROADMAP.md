@@ -29,7 +29,7 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 - [x] Klasör iskeletini oluştur
 - [x] `.gitignore` (veri, ağırlıklar, `__pycache__`, `.ipynb_checkpoints`, `wandb/`)
-- [x] `requirements.txt`: `torch`, `segmentation-models-pytorch`, `albumentations`, `rasterio`/`shapely`, `opencv-python`, `scikit-learn`, `grad-cam`, `pyyaml`, `pandas`, `matplotlib`
+- [x] `requirements.txt`: `torch`, `segmentation-models-pytorch`, `albumentations`, `shapely`, `opencv-python`, `scikit-learn`, `grad-cam`, `pyyaml`, `pandas`, `matplotlib`
 - [x] `README.md`: proje özeti, kurulum, ilerleme günlüğü bölümü
 - [x] xBD'ye Kaggle'da eriş (mevcut dataset veya kendi yüklemen)
 - [x] Kaggle notebook'ta repoyu `git clone` + `pip install -e .` ile çalıştırmayı test et
@@ -46,7 +46,7 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 - [x] xBD makalesi (Gupta ve ark., 2019) — veri seti, etiket şeması, xView2 metriği
 - [x] xView2 yarışmasının kazanan çözümleri (Siamese U-Net, iki aşamalı yaklaşımlar)
 - [x] Focal Loss (Lin ve ark., 2017), Dice Loss
-- [ ] Grad-CAM (Selvaraju ve ark., 2017), segmentasyon için Grad-CAM uyarlamaları
+- [ ] ~~Grad-CAM (Selvaraju ve ark., 2017), segmentasyon için Grad-CAM uyarlamaları~~ → Faz 8'e taşındı
 - [x] Her kaynak için 3–5 satırlık özet
 
 **Çıktı:** `docs/literature.md` (+ BibTeX: `docs/references.bib`)
@@ -59,10 +59,12 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 **Hedef:** Veriyi tanımak; dengesizliği sayılarla göstermek.
 
 - [x] Olay (event) ve afet türü bazında görüntü sayıları
-- [x] Sınıf bazında **bina** ve **piksel** sayıları (genel + olay bazında)
+- [x] Sınıf bazında **bina** ve **piksel** sayıları (genel + afet türü bazında)
 - [x] Görüntü başına bina sayısı dağılımı; hiç bina içermeyen görüntü oranı
 - [x] Örnek pre/post/maske görselleri (her afet türünden)
 - [x] Bulguları özetle → Focal + Dice ve sampler kararlarının gerekçesi
+
+> Atlanan analizler: bina boyutları (karar Weber & Kané, 2020'ye dayandırıldı), çekim koşulları (off-nadir, çözünürlük), no-data alanları ve renk istatistikleri (ImageNet normalizasyonu kullanılacak). Ayrıntılar: `02_eda.ipynb`, bölüm 8.
 
 **Çıktı:** `notebooks/02_eda.ipynb` (çıktılarıyla commit'lenir), `reports/figures/eda_*`
 **Bitirme kriteri:** "Sınıf dengesizliği" ve "afet türü dengesizliği" grafiklerle gösterilmiş.
@@ -73,18 +75,20 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 **Hedef:** Eğitime hazır, tekrarlanabilir veri.
 
-- [ ] **Maske üretimi:** post JSON'lardaki poligonları rasterize et (`subtype` → sınıf id). `un-classified` → `255`
-- [ ] **Split (tile'lamadan ÖNCE, görüntü seviyesinde):**
-  - [ ] Tüm tier'ları tek tabloda birleştir (`image_id, event, disaster_type, tier, n_buildings, ...`)
-  - [ ] `train_test_split(stratify=event, seed=42)` → %60 / %40, ardından %40 → %20 / %20
-  - [ ] Çok az örneği olan olaylar için kontrol/elle dağıtım
-  - [ ] `splits/train.csv`, `splits/val.csv`, `splits/test.csv` → **repoya commit**
-  - [ ] Split dağılım tablosu: her split'te olay ve sınıf oranları (stratification'ın kanıtı)
-- [ ] **Sızıntı kontrolü:** aynı `image_id` iki split'te yok (assert/test)
-- [ ] **Tile'lama:** 1024×1024 → 512×512 (veya yeniden boyutlandırma; karar EDA'ya göre)
-- [ ] İşlenmiş veriyi Kaggle Dataset olarak kaydet (versiyonlu)
+- [x] **Maske üretimi:** post JSON'lardaki poligonları rasterize et (`subtype` → sınıf id). `un-classified` → `255`
+  - [x] Maskeler **post** etiketlerinden çiziliyor (EDA: pre ve post'ta binalar aynı)
+  - [x] Koordinatlar görüntü sınırlarına kırpılıyor (clip); çakışmalarda ağır hasar üste çiziliyor
+  - [x] **Doğrulama:** hazır maskelerle karşılaştırma (100 görüntü, un-classified hariç %99,996 uyum)
+- [x] **Split (tile'lamadan ÖNCE, görüntü seviyesinde):**
+  - [x] Tüm tier'ları tek tabloda birleştir (`image_id, folder, disaster, disaster_type, ...`)
+  - [x] `train_test_split(stratify=disaster, seed=42)` → %60 / %40, ardından %40 → %20 / %20
+  - [x] `splits/train.csv`, `splits/val.csv`, `splits/test.csv` → **repoya commit**
+  - [x] Split dağılım tablosu: her split'te olay oranları (stratification'ın kanıtı)
+- [x] **Sızıntı kontrolü:** `tests/test_split_leakage.py` (çakışma yok, 11.034 çiftin hepsi atanmış, 19 olayın hepsi her split'te)
+- [x] 11.034 maske kaydedildi ve notebook çıktısı olarak saklandı (Faz 4'te input olarak eklenecek)
+- [ ] ~~Tile'lama~~ → Faz 4'e taşındı: parçalar diske kaydedilmiyor, eğitim sırasında kesiliyor
 
-**Çıktı:** `src/data/rasterize.py`, `src/data/split.py`, `src/data/tile.py`, `notebooks/03_preprocessing_split.ipynb`, `splits/*.csv`
+**Çıktı:** `src/data/labels.py`, `src/data/metadata.py`, `src/data/masks.py`, `src/data/split.py`, `tests/test_split_leakage.py`, `notebooks/03_preprocessing_split.ipynb`, `splits/*.csv`
 **Bitirme kriteri:** Split dosyaları sabit, sızıntı testi geçiyor, split tabloları raporlanmış.
 
 ---
@@ -94,10 +98,13 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 **Hedef:** Config ile yönetilen, kesintiye dayanıklı eğitim döngüsü.
 
 - [ ] **Dataset:** pre + post + maske döndürür; **pre ve post'a birebir aynı augmentation** (albumentations `additional_targets`)
+  - [ ] Maskeler `03_preprocessing_split` notebook çıktısından okunur
+  - [ ] **Tile'lama:** 1024×1024 görüntüden 512×512 parça eğitim sırasında kesilir (küçültme değil; gerekçe: Weber & Kané, 2020)
+  - [ ] Binasız görüntü/parçaların **sadece bir kısmı** eğitimde kullanılır (EDA: görüntülerin %35'i boş)
 - [ ] Augmentation: flip, rotate90, hafif ölçek/kırpma, renk oynaması (pre/post için ayrı ayrı küçük renk farkı opsiyonel)
 - [ ] **Kayıplar:**
-  - [ ] `FocalLoss(alpha=class_weights, gamma=2, ignore_index=255)`
-  - [ ] `DiceLoss(ignore_index=255)`
+  - [ ] `FocalLoss(alpha=class_weights, gamma=2, ignore_index=255)`; α ağırlıkları **yumuşatılmış** (EDA: destroyed pikselleri arka plandan ~500 kat az)
+  - [ ] `DiceLoss(ignore_index=255)`; ortalamaya **arka plan dahil edilmez** (EDA: piksellerin %96,65'i arka plan)
   - [ ] `CombinedLoss(λ)`
 - [ ] **Metrikler:** xView2 skoru (`0.3·F1_loc + 0.7·F1_dmg`, F1_dmg = 4 hasar sınıfının harmonik ortalaması), sınıf bazında F1/IoU, confusion matrix
 - [ ] **Early stopping:** `patience = max(1, int(0.2 * max_epochs))`; izlenen metrik: val xView2 skoru
@@ -141,7 +148,7 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 | A2 | Füzyon | Concat vs. Fark `\|f_post − f_pre\|` vs. Concat + Fark |
 | A3 | Kayıp | CE vs. Focal vs. Focal + Dice |
 | A4 | λ | 0.3 / 0.5 / 0.7 |
-| A5 | Örnekleme | Normal vs. WeightedRandomSampler (deprem ağırlıklı) |
+| A5 | Örnekleme | Normal vs. hasarlı bina içeren görüntüleri ağırlıklı örnekleme (EDA: deprem görüntülerinin %99'u hasarsız, deprem ağırlıklı örnekleme ters etki yapar) |
 | A6 | Encoder | ResNet34 vs. EfficientNet-B3 (kota izin verirse) |
 
 - [ ] Her deney için config + skor + eğitim süresi kaydı
@@ -161,7 +168,8 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 - [ ] Final model ile test setinde **tek seferlik** değerlendirme
 - [ ] xView2 skoru, F1_loc, F1_dmg, sınıf bazında F1/IoU
 - [ ] Normalize confusion matrix
-- [ ] Olay bazında ve afet türü bazında skor kırılımı (özellikle deprem olayları)
+- [ ] Olay bazında ve afet türü bazında skor kırılımı
+- [ ] Deprem sonuçları sadece lokalizasyon ve no-damage için yorumlanacak (EDA: tüm depremde sadece 3 yıkılmış bina)
 - [ ] Baseline'ın test skoru (karşılaştırma için)
 - [ ] Nitel sonuçlar: iyi ve kötü tahmin örnekleri
 
@@ -174,6 +182,7 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 **Hedef:** "Model kararını görüntünün neresine bakarak veriyor?" sorusunu görsel ve yorumla cevaplamak.
 
+- [ ] Literatür: Grad-CAM, Grad-CAM++, segmentasyon için Grad-CAM, Sanity Checks (Faz 1'den taşındı) → `docs/literature.md` E bölümü
 - [ ] **Wrapper:** Siamese modeli tek girdi (6 kanal: pre+post) alacak şekilde sar
 - [ ] **Hedef:** `SemanticSegmentationTarget` — c sınıfının tahmin maskesi bölgesindeki logit toplamı
 - [ ] **Katman karşılaştırması:** encoder son bloğu vs. decoder katmanı
@@ -192,9 +201,11 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 ---
 
-### Faz 9 — Genişleme: Türkiye Fine-Tune 
+### Faz 9 — Genişleme: Türkiye Fine-Tune
 
 **Hedef:** xBD modelinin Kahramanmaraş 2023 depremine transferini ölçmek.
+
+> EDA motivasyonu: xBD'deki tek deprem olayında (Mexico City) binaların %99,2'si hasarsız; model xBD'den deprem yıkımını öğrenemiyor.
 
 - [ ] Literatür: Türkiye 2023 depremi hasar tespiti çalışmaları (KATE-CD, TUE-CD, xBD→Türkiye transfer çalışmaları)
 - [ ] Veri setini temin et; lisansını ve etiket şemasını kontrol et (aday: KATE-CD, yedek: TUE-CD)
@@ -222,7 +233,7 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 - [ ] Rapor iskeleti: Giriş · Literatür · Veri · Yöntem · Deneyler · Sonuçlar · XAI · *(Faz 9 yapıldıysa)* Türkiye Transferi · Tartışma ve Limitasyonlar · Sonuç ve Gelecek Çalışmalar
 - [ ] Tüm tablo ve figürlerin son hali
-- [ ] Limitasyonlar: coğrafi korelasyon, Kaggle hesaplama kısıtları; *(Faz 9 yapıldıysa)* etiket uyumsuzluğu, nadir görüntüde katlı bina çöküşünün zor görünmesi
+- [ ] Limitasyonlar: coğrafi korelasyon, Kaggle hesaplama kısıtları, piksel tabanlı modelde aynı binanın farklı piksellerinin farklı sınıf alabilmesi; *(Faz 9 yapıldıysa)* etiket uyumsuzluğu, nadir görüntüde katlı bina çöküşünün zor görünmesi
 - [ ] README'yi son haline getir: sonuçlar, nasıl çalıştırılır, model ağırlığı linki
 - [ ] Sunum slaytları + (opsiyonel) demo notebook'u
 - [ ] `v1.0` tag'i + GitHub Release
@@ -234,7 +245,7 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 ## 3. Repo Yapısı
 
 ```
-damage-assessment/
+damage-detection/
 ├── configs/
 │   ├── baseline.yaml
 │   ├── siamese_r34.yaml
@@ -243,7 +254,7 @@ damage-assessment/
 │   ├── train.csv  val.csv  test.csv
 │   └── turkey_*.csv               # Faz 9 (opsiyonel)
 ├── src/
-│   ├── data/                      # rasterize.py, split.py, tile.py, dataset.py, transforms.py
+│   ├── data/                      # xbd.py, labels.py, metadata.py, masks.py, split.py, dataset.py, transforms.py
 │   ├── models/                    # baseline_unet.py, siamese_unet.py
 │   ├── losses/                    # focal.py, dice.py, combined.py
 │   ├── metrics/                   # xview2.py, confusion.py
@@ -268,11 +279,11 @@ damage-assessment/
 ├── ROADMAP.md
 ├── README.md
 ├── requirements.txt
-├── setup.py / pyproject.toml      # pip install -e . için
+├── pyproject.toml                 # pip install -e . için
 └── .gitignore
 ```
 
-**Repoya girmeyenler:** ham/işlenmiş veri, model ağırlıkları (`*.pt`), `wandb/`, büyük çıktılar. Ağırlıklar → GitHub Releases veya Kaggle Models.
+**Repoya girmeyenler:** ham/işlenmiş veri, maskeler, model ağırlıkları (`*.pt`), `wandb/`, büyük çıktılar. Maskeler → Kaggle notebook çıktısı. Ağırlıklar → GitHub Releases veya Kaggle Models.
 
 ---
-*Son güncelleme: 28 Ekim 2026*
+*Son güncelleme: 30 Ekim 2026*
