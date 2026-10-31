@@ -47,7 +47,7 @@ class XView2Metric:
             self.dmg[c][2] += ((pred_dmg != c) & (true_dmg == c)).sum().item()
 
     # compute the final scores
-    def compute(self):
+    def compute_f1(self):
         f1_loc = f1_score(self.loc[0], self.loc[1], self.loc[2])
 
         f1_per_class = {}
