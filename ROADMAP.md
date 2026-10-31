@@ -97,26 +97,32 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 **Hedef:** Config ile yönetilen, kesintiye dayanıklı eğitim döngüsü.
 
-- [ ] **Dataset:** pre + post + maske döndürür; **pre ve post'a birebir aynı augmentation** (albumentations `additional_targets`)
-  - [ ] Maskeler `03_preprocessing_split` notebook çıktısından okunur
-  - [ ] **Tile'lama:** 1024×1024 görüntüden 512×512 parça eğitim sırasında kesilir (küçültme değil; gerekçe: Weber & Kané, 2020)
-  - [ ] Binasız görüntü/parçaların **sadece bir kısmı** eğitimde kullanılır (EDA: görüntülerin %35'i boş)
-- [ ] Augmentation: flip, rotate90, hafif ölçek/kırpma, renk oynaması (pre/post için ayrı ayrı küçük renk farkı opsiyonel)
-- [ ] **Kayıplar:**
-  - [ ] `FocalLoss(alpha=class_weights, gamma=2, ignore_index=255)`; α ağırlıkları **yumuşatılmış** (EDA: destroyed pikselleri arka plandan ~500 kat az)
-  - [ ] `DiceLoss(ignore_index=255)`; ortalamaya **arka plan dahil edilmez** (EDA: piksellerin %96,65'i arka plan)
-  - [ ] `CombinedLoss(λ)`
-- [ ] **Metrikler:** xView2 skoru (`0.3·F1_loc + 0.7·F1_dmg`, F1_dmg = 4 hasar sınıfının harmonik ortalaması), sınıf bazında F1/IoU, confusion matrix
-- [ ] **Early stopping:** `patience = max(1, int(0.2 * max_epochs))`; izlenen metrik: val xView2 skoru
-- [ ] Her epoch sonunda checkpoint (`last.pt`) + en iyi model (`best.pt`); `--resume` desteği
-- [ ] Seed sabitleme (`torch`, `numpy`, `random`, `cudnn.deterministic`)
-- [ ] Mixed precision (AMP)
-- [ ] Loglama: CSV + (opsiyonel) Weights & Biases
-- [ ] `configs/*.yaml` ile tüm hiperparametreler; config dosyası her deneyin çıktısına kopyalanır
-- [ ] **Sağlamlık testi:** tek bir batch'i overfit edebiliyor mu?
+- [x] **Dataset** (`XBDDataset`): pre + post + maske döndürür; pre, post ve maskeye **birebir aynı** dönüşüm
+  - [x] Maskeler `03_preprocessing_split` notebook çıktısından okunur
+  - [x] **Tile'lama:** train'de 1024×1024 görüntüden rastgele 512×512 parça kesilir; val/test'te tam 1024×1024 görüntü kullanılır (küçültme değil; gerekçe: Weber & Kané, 2020)
+  - [x] ImageNet normalizasyonu
+- [x] Augmentation: yatay/dikey çevirme ve 90° döndürme (NumPy ile; albumentations kullanılmadı)
+- [x] **Kayıplar** (`src/losses/`):
+  - [x] `FocalLoss(alpha, gamma=2)`, `ignore_index=255`
+  - [x] `DiceLoss`: sadece hasar sınıfları (1–4), **arka plan dahil değil** (EDA: piksellerin %96,65'i arka plan)
+  - [x] `CombinedLoss(λ)`: `λ·Focal + (1−λ)·Dice`
+  - [x] **Sınıf ağırlıkları:** train maskelerinden, yumuşatılmış ters orantı (1/√f, ortalaması 1): `[0.080, 0.479, 1.382, 1.334, 1.725]` (destroyed/arka plan ≈ 22×, ham ters orantıda ≈ 500×)
+- [x] **Metrik:** xView2 skoru (`0.3·F1_loc + 0.7·F1_dmg`, F1_dmg = 4 hasar sınıfının harmonik ortalaması), sınıf bazında F1; sayaçlar bütün val seti boyunca toplanır
+- [x] **Model:** `BaselineUNet` (ResNet34, ImageNet, sadece post); bütün modeller aynı arayüzü kullanır: `model(pre, post)`
+- [x] **Eğitim döngüsü** (`src/train.py`): `train_one_epoch`, `validate`, `fit`
+  - [x] **Early stopping:** `patience = max(1, int(0.2 * max_epochs))`; izlenen metrik: val xView2 skoru
+  - [x] `best.pt` (en iyi model) + `last.pt` (her epoch, tam durum) + `resume` desteği
+  - [x] Loglama: her epoch `log.csv`'ye (kayıp, xView2, F1'ler)
+- [x] `configs/baseline.yaml`: bütün hiperparametreler; notebook'ta `load_config` ile okunur (`run` fonksiyonu yazılmadı)
+- [x] **İlk deneme:** 64/16 örnek, 3 epoch → kayıp azalıyor, val skoru artıyor
+- [x] **Sağlamlık testi:** tek batch 200 adımda ezberleniyor (gruptaki sınıflarda F1 ≈ 0,97–0,98)
+- [ ] ~~Seed sabitleme~~ → kullanılmadı (raporda limitasyon olarak belirtilecek)
+- [ ] ~~Weights & Biases~~ → kullanılmadı, CSV log yeterli
+- [ ] Mixed precision (AMP) → Faz 5'e taşındı (eğitim süresine göre)
+- [ ] Binasız parçaların azaltılması → Faz 5'e taşındı
 
-**Çıktı:** `src/train.py`, `src/losses/`, `src/metrics/`, `src/data/dataset.py`, `configs/`
-**Bitirme kriteri:** Tek batch overfit başarılı; eğitim kesilip `--resume` ile devam edebiliyor.
+**Çıktı:** `src/data/dataset.py`, `src/losses/{focal_loss, dice_loss, combined_loss, weights}.py`, `src/metrics/xview2.py`, `src/models/baseline_unet.py`, `src/train.py`, `src/utils/config.py`, `configs/baseline.yaml`, `notebooks/04_training_pipeline.ipynb`
+**Bitirme kriteri:** Tek batch overfit başarılı; eğitim uçtan uca çalışıyor; `best.pt`, `last.pt` ve `log.csv` oluşuyor.
 
 ---
 
@@ -124,9 +130,12 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 **Hedef:** Karşılaştırma noktası oluşturmak.
 
-- [ ] **Baseline:** sadece post görüntü alan tek encoder'lı U-Net (ResNet34, ImageNet pretrained)
+- [ ] **Baseline:** sadece post görüntü alan tek encoder'lı U-Net (ResNet34, ImageNet pretrained) → model Faz 4'te hazır
+- [ ] Bir epoch'un süresini ölç; gerekirse **mixed precision (AMP)** ekle
+- [ ] Binasız parçaların bir kısmını atla (EDA: görüntülerin %35'i boş)
+- [ ] Kaggle oturumu kesilirse `last.pt` ile devam (`resume=True`)
 - [ ] Aynı split, aynı kayıp, aynı early stopping
-- [ ] Val skorlarını kaydet
+- [ ] Val skorlarını kaydet; `log.csv`'den eğitim eğrilerini çiz
 - [ ] **Grad-CAM prototipi:** baseline üzerinde ilk ısı haritası (wrapper sorunlarını erkenden görmek için)
 
 **Çıktı:** `src/models/baseline_unet.py`, `notebooks/05_train_baseline.ipynb`, sonuç tablosunda ilk satır
@@ -256,22 +265,23 @@ damage-detection/
 ├── src/
 │   ├── data/                      # xbd.py, labels.py, metadata.py, masks.py, split.py, dataset.py, transforms.py
 │   ├── models/                    # baseline_unet.py, siamese_unet.py
-│   ├── losses/                    # focal.py, dice.py, combined.py
-│   ├── metrics/                   # xview2.py, confusion.py
+│   ├── losses/                    # focal_loss.py, dice_loss.py, combined_loss.py, weights.py
+│   ├── metrics/                   # xview2.py
 │   ├── xai/                       # gradcam.py, wrappers.py, deletion_test.py
-│   ├── utils/                     # seed.py, checkpoint.py, logger.py
+│   ├── utils/                     # config.py
 │   ├── train.py
 │   └── evaluate.py
 ├── notebooks/
 │   ├── 01_setup_check.ipynb
 │   ├── 02_eda.ipynb
 │   ├── 03_preprocessing_split.ipynb
+│   ├── 04_training_pipeline.ipynb
 │   ├── 05_train_baseline.ipynb
 │   ├── 06_train_siamese.ipynb
 │   ├── 07_evaluate_xbd_test.ipynb
 │   ├── 08_gradcam_xai.ipynb
 │   └── 09_turkey_finetune.ipynb   # Faz 9 (opsiyonel)
-├── tests/                         # test_split_leakage.py, test_losses.py, test_metrics.py
+├── tests/                         # test_split_leakage.py
 ├── docs/                          # literature.md, data_sources.md, references.bib
 ├── reports/
 │   ├── figures/
@@ -286,4 +296,4 @@ damage-detection/
 **Repoya girmeyenler:** ham/işlenmiş veri, maskeler, model ağırlıkları (`*.pt`), `wandb/`, büyük çıktılar. Maskeler → Kaggle notebook çıktısı. Ağırlıklar → GitHub Releases veya Kaggle Models.
 
 ---
-*Son güncelleme: 30 Ekim 2026*
+*Son güncelleme: 31 Ekim 2026*

@@ -1,0 +1,26 @@
+# Baseline experiment: U-Net that uses only the post-disaster image
+experiment: baseline
+
+data:
+  xbd_root: /kaggle/input/datasets/qianlanzz/xbd-dataset/xbd
+  mask_root: /kaggle/input/notebooks/azra41221/03-preprocessing-split/masks
+  train_split: splits/train.csv
+  val_split: splits/val.csv
+  crop_size: 512
+
+model:
+  name: baseline_unet
+  encoder: resnet34
+
+loss:
+  gamma: 2.0
+  lam: 0.5
+  class_weights: [0.0797, 0.4791, 1.3820, 1.3340, 1.7251]
+
+training:
+  batch_size: 8
+  val_batch_size: 2
+  num_workers: 2
+  learning_rate: 0.0001
+  max_epochs: 50
+  out_dir: /kaggle/working/outputs/baseline
