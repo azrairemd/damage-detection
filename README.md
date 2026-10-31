@@ -14,7 +14,7 @@ Pixel-level building damage segmentation from pre- and post-disaster satellite i
 | 1 | Literature review | Done (XAI papers in Phase 8) |
 | 2 | Exploratory data analysis (EDA) | Done |
 | 3 | Preprocessing & stratified split | Done |
-| 4 | Training pipeline | In progress |
+| 4 | Training pipeline | Done |
 | 5 | Baseline model | Planned |
 | 6 | Siamese model & ablations | Planned |
 | 7 | Test evaluation | Planned |
