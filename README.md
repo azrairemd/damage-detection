@@ -2,8 +2,6 @@
 
 Pixel-level building damage segmentation from pre- and post-disaster satellite image pairs, using a **Siamese U-Net** trained on the **xBD** dataset, with **Grad-CAM** explanations of the model's decisions.
 
-> 🎓 Undergraduate graduation project · 🚧 Work in progress
-
 ---
 
 ## 📈 Progress
