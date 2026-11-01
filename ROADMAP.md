@@ -130,16 +130,21 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 **Hedef:** Karşılaştırma noktası oluşturmak.
 
-- [ ] **Baseline:** sadece post görüntü alan tek encoder'lı U-Net (ResNet34, ImageNet pretrained) → model Faz 4'te hazır
-- [ ] Bir epoch'un süresini ölç; gerekirse **mixed precision (AMP)** ekle
-- [ ] Binasız parçaların bir kısmını atla (EDA: görüntülerin %35'i boş)
-- [ ] Kaggle oturumu kesilirse `last.pt` ile devam (`resume=True`)
-- [ ] Aynı split, aynı kayıp, aynı early stopping
-- [ ] Val skorlarını kaydet; `log.csv`'den eğitim eğrilerini çiz
-- [ ] **Grad-CAM prototipi:** baseline üzerinde ilk ısı haritası (wrapper sorunlarını erkenden görmek için)
+- [x] **Baseline:** sadece post görüntü alan tek encoder'lı U-Net (ResNet34, ImageNet pretrained)
+- [x] **Süre ölçümü** (40 train + 40 val grubu) ve hızlandırma:
+  - [x] `num_workers` 2 → 4: epoch ~66 dk → ~21 dk (darboğaz veri okuma)
+  - [x] **AMP:** val 1,4× hızlandı, train'de belirgin fark yok (veri okuma sınırlı); bellek için tutuldu
+  - [x] `max_epochs` 50 → 20 (patience 4), Kaggle süre sınırına sığması için
+- [x] **Sürüm sorunu:** `timm`/smp güncellemesi import hatası verdi → `segmentation-models-pytorch==0.5.0`, `timm==1.0.29` sabitlendi
+- [x] **Tam eğitim** (Save & Run All): en iyi val skoru **0,6095** (epoch 11), early stopping epoch 15'te, 2,2 saat
+- [x] Sınıf bazında analiz: en zor sınıf **minor** (F1 0,371); val skorundaki dalgalanmanın kaynağı minor
+- [x] Eğitim eğrileri: `reports/figures/baseline_curves.png`; log: `reports/logs/baseline_log.csv`
+- [x] `reports/results.md`: sonuç tablosunun ilk satırı
+- [ ] ~~Binasız parçaların azaltılması~~ → yapılmadı (gerekirse Faz 6)
+- [ ] ~~Grad-CAM prototipi~~ → Faz 8'e taşındı (plana sadık kalındı)
 
-**Çıktı:** `src/models/baseline_unet.py`, `notebooks/05_train_baseline.ipynb`, sonuç tablosunda ilk satır
-**Bitirme kriteri:** Baseline val xView2 skoru kayıtlı; Grad-CAM en az bir görüntüde çalışıyor.
+**Çıktı:** `notebooks/05_train_baseline.ipynb`, `reports/results.md`, `reports/logs/baseline_log.csv`, `reports/figures/baseline_curves.png`, `best.pt` (Kaggle notebook çıktısında)
+**Bitirme kriteri:** Baseline val xView2 skoru kayıtlı; eğitim eğrileri ve sınıf bazında sonuçlar raporlanmış.
 
 ---
 
@@ -296,4 +301,4 @@ damage-detection/
 **Repoya girmeyenler:** ham/işlenmiş veri, maskeler, model ağırlıkları (`*.pt`), `wandb/`, büyük çıktılar. Maskeler → Kaggle notebook çıktısı. Ağırlıklar → GitHub Releases veya Kaggle Models.
 
 ---
-*Son güncelleme: 31 Ekim 2026*
+*Son güncelleme: 1 Kasım 2026*
