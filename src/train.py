@@ -4,7 +4,7 @@ import csv
 import torch
 from src.metrics.xview2 import XView2Metric
 
-def train_one_epoch(model, loader, loss_fn, optimizer, device):
+def train_one_epoch(model, loader, loss_fn, optimizer, device, scaler):
     model.train()
     total_loss = 0.0
 
@@ -13,11 +13,14 @@ def train_one_epoch(model, loader, loss_fn, optimizer, device):
         post = post.to(device)
         mask = mask.to(device)
 
-        logits = model(pre, post)
-        loss = loss_fn(logits, mask)
+        with torch.autocast(device_type="cuda", dtype=torch.float16):
+            logits = model(pre, post)
+        loss = loss_fn(logits.float(), mask)
+
         optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
 
         total_loss += loss.item()
 
@@ -33,7 +36,9 @@ def validate(model, loader, device):
             post = post.to(device)
             mask = mask.to(device)
 
-            logits = model(pre, post)
+            with torch.autocast(device_type="cuda", dtype=torch.float16):
+                logits = model(pre, post)
+                
             pred = logits.argmax(dim=1)
             metric.update(pred, mask)
 
@@ -61,6 +66,7 @@ def fit(model, train_loader, val_loader, loss_fn, optimizer, device, max_epochs,
     best_score = -1.0
     epochs_without_improvement = 0
     start_epoch = 1
+    scaler = torch.amp.GradScaler("cuda")
 
     if resume and os.path.exists(last_path):
         checkpoint = torch.load(last_path, map_location=device)
@@ -72,7 +78,7 @@ def fit(model, train_loader, val_loader, loss_fn, optimizer, device, max_epochs,
         print(f"Resuming from epoch {start_epoch}")
 
     for epoch in range(start_epoch, max_epochs + 1):
-        train_loss = train_one_epoch(model, train_loader, loss_fn, optimizer, device)
+        train_loss = train_one_epoch(model, train_loader, loss_fn, optimizer, device, scaler)
         val = validate(model, val_loader, device)
         print(f"epoch {epoch}/{max_epochs}  train loss {train_loss:.4f}  "
               f"val score {val['score']:.4f} (loc {val['f1_loc']:.4f}, dmg {val['f1_dmg']:.4f})")
