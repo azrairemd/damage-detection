@@ -2,8 +2,6 @@
 
 Pixel-level building damage segmentation from pre- and post-disaster satellite image pairs, using a **Siamese U-Net** trained on the **xBD** dataset, with **Grad-CAM** explanations of the model's decisions.
 
-> 🎓 Undergraduate graduation project · 🚧 Work in progress
-
 ---
 
 ## 📈 Progress
@@ -15,8 +13,8 @@ Pixel-level building damage segmentation from pre- and post-disaster satellite i
 | 2 | Exploratory data analysis (EDA) | Done |
 | 3 | Preprocessing & stratified split | Done |
 | 4 | Training pipeline | Done |
-| 5 | Baseline model | Planned |
-| 6 | Siamese model & ablations | Planned |
+| 5 | Baseline model | Done |
+| 6 | Siamese model & ablations | Done |
 | 7 | Test evaluation | Planned |
 | 8 | Grad-CAM / XAI | Planned |
 | 9 | Fine-tuning on Türkiye earthquake data | Planned |
