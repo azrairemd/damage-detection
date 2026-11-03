@@ -14,7 +14,7 @@ Pixel-level building damage segmentation from pre- and post-disaster satellite i
 | 3 | Preprocessing & stratified split | Done |
 | 4 | Training pipeline | Done |
 | 5 | Baseline model | Done |
-| 6 | Siamese model & ablations | Planned |
+| 6 | Siamese model & ablations | Done |
 | 7 | Test evaluation | Planned |
 | 8 | Grad-CAM / XAI | Planned |
 | 9 | Fine-tuning on Türkiye earthquake data | Planned |

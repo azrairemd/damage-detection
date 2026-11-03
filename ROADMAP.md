@@ -152,23 +152,26 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 **Hedef:** Ana modeli geliştirmek ve her tasarım kararını deneyle desteklemek.
 
-- [ ] **Siamese U-Net:** paylaşımlı encoder (pre ve post aynı ağırlıklarla), her ölçekte füzyon, U-Net decoder
-- [ ] (Opsiyonel) Bina lokalizasyonu için yardımcı binary head
-- [ ] **Ablation deneyleri** (hepsi val setinde):
+- [x] **Siamese U-Net** (`SiameseUNet`): tek ResNet34 encoder iki görüntü için ortak, 5 ölçekte füzyon (`concat` ya da `diff`), U-Net decoder (smp 0.5.0 parçalarıyla). Concat 26,4M, diff 24,4M parametre
+- [ ] ~~Yardımcı binary head~~ → yapılmadı
+- [x] **Ablation deneyleri** (hepsi val setinde, `max_epochs` 20, her deneyde tek değişiklik):
 
-| # | Değişken | Seçenekler |
-|---|---|---|
-| A1 | Girdi | Post-only (baseline) vs. Siamese |
-| A2 | Füzyon | Concat vs. Fark `\|f_post − f_pre\|` vs. Concat + Fark |
-| A3 | Kayıp | CE vs. Focal vs. Focal + Dice |
-| A4 | λ | 0.3 / 0.5 / 0.7 |
-| A5 | Örnekleme | Normal vs. hasarlı bina içeren görüntüleri ağırlıklı örnekleme (EDA: deprem görüntülerinin %99'u hasarsız, deprem ağırlıklı örnekleme ters etki yapar) |
-| A6 | Encoder | ResNet34 vs. EfficientNet-B3 (kota izin verirse) |
+| # | Değişken | Seçenekler | Sonuç |
+|---|---|---|---|
+| A1 | Girdi | Post-only (baseline) vs. Siamese | Focal + Dice ile eşit (0,610 vs. 0,598); CE ile Siamese her sınıfta daha iyi |
+| A2 | Füzyon | Concat vs. Fark `\|f_post − f_pre\|` | **Concat** (0,598 vs. 0,587, küçük fark) |
+| A3 | Kayıp | Focal + Dice vs. Focal vs. ağırlıklı CE | **CE** (0,598 → 0,658 → 0,708). Dice destroyed çöküşlerine, Focal γ minor'ın geç öğrenilmesine yol açtı |
+| ~~A4~~ | ~~λ~~ | — | Yapılmadı (A3 Dice'sız kaybı seçti) |
+| ~~A5~~ | ~~Örnekleme~~ | — | Yapılmadı (kota) |
+| ~~A6~~ | ~~Encoder~~ | — | Yapılmadı (kota) |
 
-- [ ] Her deney için config + skor + eğitim süresi kaydı
-- [ ] En iyi konfigürasyonu seç → **final xBD modeli**
+- [x] Her deney için config (`configs/siamese_*.yaml`) + log (`reports/logs/`) + skor (`reports/results.md`)
+- [x] Epoch süresi ölçülmedi: Siamese de ~9–11 dk/epoch (darboğaz veri okuma, GPU değil)
+- [x] **Final model:** Siamese concat + sınıf ağırlıklı CE, 20 epoch'luk checkpoint'ten **`resume` ile 40 epoch'a** uzatıldı (patience 8) → **val 0,7401** (epoch 35), baseline'dan +0,131
+- [x] Karşılaştırma grafiği: `reports/figures/siamese_experiments.png`
+- [x] Notlar: Kaggle'da aynı anda en fazla 2 GPU oturumu; Save Version'a bir kez basılmalı. Sürüm çıktıları sürüm seçmeden input olarak eklenemiyor → final checkpoint `siamese-ce-checkpoint` Kaggle dataset'i olarak yüklendi
 
-**Çıktı:** `src/models/siamese_unet.py`, `notebooks/06_train_siamese.ipynb`, `reports/results.md` (ablation tablosu)
+**Çıktı:** `src/models/siamese_unet.py`, `configs/siamese_{concat,diff,focal,ce,ce_long}.yaml`, `notebooks/06_train_siamese.ipynb`, `notebooks/06b_train_ce_long.ipynb`, `reports/results.md`, `reports/logs/siamese_*_log.csv`, `reports/figures/siamese_experiments.png`
 **Bitirme kriteri:** Final model seçilmiş; seçim gerekçesi tabloyla belgelenmiş.
 
 > ⚠️ Model seçimi **yalnızca val** setiyle yapılır. Test setine bu fazda dokunulmaz.
@@ -179,7 +182,8 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 **Hedef:** Final modelin tarafsız performansı.
 
-- [ ] Final model ile test setinde **tek seferlik** değerlendirme
+- [ ] Final model (Siamese concat + CE, epoch 35) ile test setinde **tek seferlik** değerlendirme
+- [ ] Confusion matrix ile Faz 6'daki destroyed çöküşlerinin hangi sınıfla karıştığını incele (Focal + Dice modeli üzerinde)
 - [ ] xView2 skoru, F1_loc, F1_dmg, sınıf bazında F1/IoU
 - [ ] Normalize confusion matrix
 - [ ] Olay bazında ve afet türü bazında skor kırılımı
@@ -262,7 +266,7 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 damage-detection/
 ├── configs/
 │   ├── baseline.yaml
-│   ├── siamese_r34.yaml
+│   ├── siamese_{concat,diff,focal,ce,ce_long}.yaml
 │   └── turkey_finetune.yaml       # Faz 9 (opsiyonel)
 ├── splits/                        # commit'lenir — tekrarlanabilirliğin kanıtı
 │   ├── train.csv  val.csv  test.csv
@@ -283,6 +287,7 @@ damage-detection/
 │   ├── 04_training_pipeline.ipynb
 │   ├── 05_train_baseline.ipynb
 │   ├── 06_train_siamese.ipynb
+│   ├── 06b_train_ce_long.ipynb
 │   ├── 07_evaluate_xbd_test.ipynb
 │   ├── 08_gradcam_xai.ipynb
 │   └── 09_turkey_finetune.ipynb   # Faz 9 (opsiyonel)
@@ -301,4 +306,4 @@ damage-detection/
 **Repoya girmeyenler:** ham/işlenmiş veri, maskeler, model ağırlıkları (`*.pt`), `wandb/`, büyük çıktılar. Maskeler → Kaggle notebook çıktısı. Ağırlıklar → GitHub Releases veya Kaggle Models.
 
 ---
-*Son güncelleme: 1 Kasım 2026*
+*Son güncelleme: 3 Kasım 2026*
