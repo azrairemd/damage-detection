@@ -1,7 +1,5 @@
 # Model: Siamese U-Net
 
-   ![Siamese U-Net architecture](../reports/figures/model_framework.png)
-
 This document describes the architecture of the final model of this project: a **Siamese U-Net** that takes a pre-disaster and a post-disaster satellite image of the same area and outputs a pixel-level building damage mask.
 
 Code: `src/models/siamese_unet.py` (class `SiameseUNet`).
@@ -122,15 +120,21 @@ The encoder is shared, so its weights are counted once; the extra parameters com
 
 ---
 
-## 7. Training (final model)
+## 7. Training
 
-| | |
-|---|---|
-| Loss | 0.5 × Focal loss (γ = 2, class weights) + 0.5 × Dice loss (damage classes only) |
-| Epochs | up to 40, early stopping with patience 8 (20% of the maximum) |
-| Optimizer | AdamW, learning rate 0.0001, batch size 8, mixed precision |
-| Input | random 512 × 512 crops with flips and 90° rotations (identical for pre, post and mask) |
-| Config | `configs/siamese_concat_fd40.yaml` |
+The same Siamese U-Net was trained with two loss functions; both models were fixed before the test evaluation.
+
+| | Focal + Dice (advisor's configuration) | Class-weighted CE (best ablation) |
+|---|---|---|
+| Loss | 0.5 × Focal (γ = 2, class weights) + 0.5 × Dice (damage classes only) | Cross-entropy with class weights |
+| Epochs | up to 40, best 12, stopped at 20 | up to 40, best 35 |
+| Val score | 0.6285 | 0.7401 |
+| **Test score** | 0.6134 | **0.7198** |
+| Config | `configs/siamese_concat_fd40.yaml` | `configs/siamese_ce_long.yaml` |
+
+Common settings: AdamW, learning rate 0.0001, batch size 8, mixed precision; early stopping with patience 8 (20% of the maximum); random 512 × 512 crops with flips and 90° rotations (identical for pre, post and mask). Class weights: `[0.080, 0.479, 1.382, 1.334, 1.725]` (background, no damage, minor, major, destroyed).
+
+Details: `reports/results.md` (validation), `reports/test_results.md` (test).
 
 ---
 

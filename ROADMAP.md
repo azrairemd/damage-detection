@@ -167,11 +167,17 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 - [x] Her deney için config (`configs/siamese_*.yaml`) + log (`reports/logs/`) + skor (`reports/results.md`)
 - [x] Epoch süresi ölçülmedi: Siamese de ~9–11 dk/epoch (darboğaz veri okuma, GPU değil)
-- [x] **Final model:** Siamese concat + sınıf ağırlıklı CE, 20 epoch'luk checkpoint'ten **`resume` ile 40 epoch'a** uzatıldı (patience 8) → **val 0,7401** (epoch 35), baseline'dan +0,131
+- [x] **Aday 1, CE 40 epoch:** Siamese concat + sınıf ağırlıklı CE, 20 epoch'luk checkpoint'ten **`resume` ile 40 epoch'a** uzatıldı (patience 8) → **val 0,7401** (epoch 35), baseline'dan +0,131
+- [x] **Hocanın değişiklikleri (7 Kasım):**
+  - [x] **Aday 2, Focal + Dice 40 epoch:** Siamese concat, sıfırdan, `max_epochs` 40 (patience 8) → **val 0,6285** (epoch 12), epoch 20'de durdu; destroyed yine çöktü (epoch 10, 13)
+  - [x] Model framework görseli (AI ile, koda göre kontrol edildi): `reports/figures/model_framework.png`
+  - [x] Veri seti açıklaması: `docs/dataset.md`
+  - [x] Concat'in nerede/nasıl yapıldığı (füzyon concat vs. decoder skip concat): `docs/model.md`
+  - [x] Hasar seviyelerine göre pre/post/maske örnekleri: `notebooks/02b_damage_examples.ipynb` → `reports/figures/damage_examples.png`
 - [x] Karşılaştırma grafiği: `reports/figures/siamese_experiments.png`
-- [x] Notlar: Kaggle'da aynı anda en fazla 2 GPU oturumu; Save Version'a bir kez basılmalı. Sürüm çıktıları sürüm seçmeden input olarak eklenemiyor → final checkpoint `siamese-ce-checkpoint` Kaggle dataset'i olarak yüklendi
+- [x] Notlar: Kaggle'da aynı anda en fazla 2 GPU oturumu; Save Version'a bir kez basılmalı. Son sürümü Quick Save olan notebook çıktılarıyla input olarak eklenemiyor → checkpoint'ler gerektiğinde Kaggle dataset'i olarak yüklendi. CE 40 epoch notebook'u Kaggle'da sonradan `06c_train_siamese_fd40` adını almış (sürüm 3)
 
-**Çıktı:** `src/models/siamese_unet.py`, `configs/siamese_{concat,diff,focal,ce,ce_long}.yaml`, `notebooks/06_train_siamese.ipynb`, `notebooks/06b_train_ce_long.ipynb`, `reports/results.md`, `reports/logs/siamese_*_log.csv`, `reports/figures/siamese_experiments.png`
+**Çıktı:** `src/models/siamese_unet.py`, `configs/siamese_{concat,diff,focal,ce,ce_long,concat_fd40}.yaml`, `notebooks/06_train_siamese.ipynb`, `notebooks/06b_train_ce_long.ipynb`, `notebooks/06c_train_siamese_fd.ipynb`, `reports/results.md`, `reports/logs/siamese_*_log.csv`, `reports/figures/siamese_experiments.png`, `docs/dataset.md`, `docs/model.md`
 **Bitirme kriteri:** Final model seçilmiş; seçim gerekçesi tabloyla belgelenmiş.
 
 > ⚠️ Model seçimi **yalnızca val** setiyle yapılır. Test setine bu fazda dokunulmaz.
@@ -180,19 +186,23 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 ### Faz 7 — xBD Test Değerlendirmesi
 
-**Hedef:** Final modelin tarafsız performansı.
+**Hedef:** Final adayların tarafsız performansı.
 
-- [ ] Final model (Siamese concat + CE, epoch 35) ile test setinde **tek seferlik** değerlendirme
-- [ ] Confusion matrix ile Faz 6'daki destroyed çöküşlerinin hangi sınıfla karıştığını incele (Focal + Dice modeli üzerinde)
-- [ ] xView2 skoru, F1_loc, F1_dmg, sınıf bazında F1/IoU
-- [ ] Normalize confusion matrix
-- [ ] Olay bazında ve afet türü bazında skor kırılımı
-- [ ] Deprem sonuçları sadece lokalizasyon ve no-damage için yorumlanacak (EDA: tüm depremde sadece 3 yıkılmış bina)
-- [ ] Baseline'ın test skoru (karşılaştırma için)
-- [ ] Nitel sonuçlar: iyi ve kötü tahmin örnekleri
+- [x] İki final aday, test setine bakmadan **önce** belirlendi; ikisi de **tek seferlik** değerlendirildi, hiçbiri test skoruna göre seçilmedi
+- [x] **Güvenlik kontrolü:** test öncesi her checkpoint val setinde değerlendirildi, eğitimdeki skorla birebir aynı çıktı (`assert`)
+- [x] Test skorları: Baseline **0,6152** · Siamese Focal + Dice **0,6134** · Siamese CE **0,7198** (en iyi)
+- [x] xView2 skoru, F1_loc, F1_dmg, sınıf bazında F1
+- [x] Normalize confusion matrix: `test_confusion_fd.png` (baseline vs. Siamese FD), `test_confusion_ce.png` (FD vs. CE)
+- [x] Destroyed hataları: baseline destroyed piksellerin %33,6'sını arka plan sanıyor, Siamese FD %18,9, Siamese CE %7,6
+- [x] Afet türü bazında skor kırılımı: iki Siamese model de her türde baseline'dan iyi
+- [x] Deprem sonuçları sadece lokalizasyon ve no-damage için yorumlandı (damage F1 = 0, beklendiği gibi)
+- [x] Baseline'ın test skoru (karşılaştırma için)
+- [ ] ~~Sınıf bazında IoU~~ → yapılmadı, F1 yeterli
+- [ ] ~~Olay (event) bazında kırılım~~ → yapılmadı, afet türü kırılımı yeterli
+- [ ] Nitel sonuçlar: iyi ve kötü tahmin örnekleri → Faz 8'deki Grad-CAM görselleriyle birlikte yapılacak (aynı şablon)
 
-**Çıktı:** `src/evaluate.py`, `notebooks/07_evaluate_xbd_test.ipynb`, `reports/results.md` güncel
-**Bitirme kriteri:** Test sonuçları tablo ve figürlerle raporlanmış; `best.pt` GitHub Release'e yüklenmiş.
+**Çıktı:** `src/evaluate.py`, `notebooks/07a_evaluate_fd.ipynb`, `notebooks/07b_evaluate_ce.ipynb`, `reports/test_results.md`, `reports/test_results_{fd,ce}.json`, `reports/figures/test_confusion_{fd,ce}.png`
+**Bitirme kriteri:** Test sonuçları tablo ve figürlerle raporlanmış. (`best.pt`'nin GitHub Release'e yüklenmesi → Faz 10)
 
 ---
 
@@ -306,4 +316,3 @@ damage-detection/
 **Repoya girmeyenler:** ham/işlenmiş veri, maskeler, model ağırlıkları (`*.pt`), `wandb/`, büyük çıktılar. Maskeler → Kaggle notebook çıktısı. Ağırlıklar → GitHub Releases veya Kaggle Models.
 
 ---
-*Son güncelleme: 3 Kasım 2026*
