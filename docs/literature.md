@@ -25,6 +25,7 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 - **Method:** A single network (Mask R-CNN with FPN, ImageNet-pretrained) jointly predicts a 5-class per-pixel map (0 = no building, 1–4 = damage levels). Pre- and post-disaster images are processed separately with shared weights, and their features are concatenated before the semantic segmentation head. Each 1024×1024 image is split into four 512×512 quadrants, and the cross-entropy loss is weighted inversely proportional to class frequency.
 - **Key result:** Overall F1 of 0.741 compared to 0.265 for the xBD baseline (holdout set). Minor damage remains the hardest class (F1 = 0.493). Feeding pre/post images as a single 6-channel input or as a difference image performed poorly. When trained too long, the model collapses into predicting only the "no building" class.
 - **Relevance to this project:** Supports our Siamese encoder with shared weights, 512×512 tiling, an imbalance-aware loss and early stopping. It also defines the overall score as 30% localization F1 + 70% damage F1. Our multi-scale fusion of pre/post features follows the future direction suggested by the authors.
+
 ---
 
 ## B. Architecture
@@ -84,33 +85,48 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 - **Method:** A large-scale empirical comparison (over half a million runs of C4.5 and Naive Bayes on real-world datasets) of cross-validation, with different numbers of folds and with or without stratification, and bootstrap, with different numbers of samples. In stratified splitting, each fold preserves the class proportions of the full dataset.
 - **Key result:** For real-world datasets, the best method for model selection is stratified ten-fold cross-validation, even when more folds are computationally affordable.
 - **Relevance to this project:** Supports our use of a stratified split, so that the validation and test sets are representative of the full dataset. Since images contain several damage classes, we stratify by disaster event, which preserves the strongly imbalanced event distribution of xBD in all three subsets. Unlike this study, we use a single 60/20/20 hold-out split instead of cross-validation, because training a deep model multiple times is not feasible with our computational budget.
+
 ---
 
 ## E. Explainability (XAI)
 
-### ⬜ Selvaraju et al. (2017) — Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization
-- **Problem:**
-- **Method:**
-- **Key result:**
-- **Relevance to this project:**
+### 🟨 Selvaraju et al. (2017) — Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization
+- **Problem:** CNNs make accurate predictions but do not show which parts of the input led to a decision, which makes it hard to trust them or to find their failure modes.
+- **Method:** Gradient-weighted Class Activation Mapping. The gradients of the score of a class with respect to the feature maps of a convolutional layer are averaged over the spatial positions, giving one importance weight per channel. The feature maps are summed with these weights and passed through a ReLU, so that only regions that increase the class score remain. The resulting coarse heat map is upsampled to the input size. It works with any CNN without changing its architecture or retraining it.
+- **Key result:** Outperforms earlier methods on weakly-supervised localization (ILSVRC-15) without architectural changes. Human studies show that the explanations help users decide which of two models is more reliable, and they reveal dataset bias (a model that distinguished doctors from nurses by looking at faces and hair, i.e. gender, instead of medical equipment).
+- **Relevance to this project:** Main XAI method of Phase 8. We use it to see which regions of the pre and post images drive the predicted damage class, and to check for dataset bias in the form of shortcut learning (see Geirhos et al., 2020).
 
-### ⬜ Vinogradova et al. (2020) — Towards Interpretable Semantic Segmentation via Gradient-weighted Class Activation Mapping
-- **Problem:**
-- **Method:**
-- **Key result:**
-- **Relevance to this project:**
+### 🟨 Chattopadhay et al. (2018) — Grad-CAM++: Generalized Gradient-Based Visual Explanations for Deep Convolutional Networks
+- **Problem:** Grad-CAM averages the gradients over the whole feature map; when several objects of the same class appear in an image, the map often highlights only part of them.
+- **Method:** Grad-CAM++ weights the gradients pixel by pixel (using higher-order derivatives) instead of a plain average, so that every instance of the class contributes to the channel weights.
+- **Key result:** Better localization of the objects and better coverage of multiple instances of the same class than Grad-CAM; in human studies, its explanations were preferred more often.
+- **Relevance to this project:** Optional comparison (bonus). xBD images often contain many buildings of the same damage class, which is exactly the case Grad-CAM++ was designed for.
 
-### ⬜ Chattopadhay et al. (2018) — Grad-CAM++: Generalized Gradient-based Visual Explanations for Deep Convolutional Networks
-- **Problem:**
-- **Method:**
-- **Key result:**
-- **Relevance to this project:**
+### 🟨 Vinogradova, Dibrov & Myers (2020) — Towards Interpretable Semantic Segmentation via Gradient-weighted Class Activation Mapping
+- **Problem:** Grad-CAM explains one score per image (classification), but a segmentation network produces one score per pixel and class.
+- **Method:** Seg-Grad-CAM: the target of Grad-CAM is the sum of the scores (logits) of a class over a selected set of pixels, e.g. a single pixel, an object or all pixels predicted as that class. The rest of Grad-CAM is unchanged.
+- **Key result:** Qualitative results with a U-Net on the Cityscapes dataset show that the method produces meaningful explanations for a chosen class and region.
+- **Relevance to this project:** Defines our Grad-CAM target: the sum of the logits of damage class c over the pixels predicted as c. Our model is also a U-Net, so the method applies directly.
 
-### ⬜ Adebayo et al. (2018) — Sanity Checks for Saliency Maps
-- **Problem:**
-- **Method:**
-- **Key result:**
-- **Relevance to this project:**
+### 🟨 Adebayo et al. (2018) — Sanity Checks for Saliency Maps
+- **Problem:** Saliency maps are judged mostly by how convincing they look, which does not show that they actually depend on what the model has learned.
+- **Method:** Two randomization tests: (1) model parameter randomization, i.e. the maps of a trained model are compared with those of the same model with random weights; (2) data randomization, i.e. a model trained on randomly permuted labels. A method that produces the same maps in both cases does not explain the model.
+- **Key result:** Some popular methods (e.g. Guided Backpropagation and Guided Grad-CAM) produce almost the same maps for a random model and behave like edge detectors. Plain gradients and Grad-CAM pass the tests.
+- **Relevance to this project:** Supports the choice of plain Grad-CAM (not Guided Grad-CAM). Grad-CAM maps are still interpreted carefully, as hints about where the model looks rather than as proof.
+
+### 🟨 Geirhos et al. (2020) — Shortcut Learning in Deep Neural Networks
+- **Problem:** Deep networks often reach high benchmark scores with decision rules that do not transfer to real-world conditions.
+- **Method:** Perspective paper that defines shortcuts as decision rules that work on the standard benchmark but fail on data from a different distribution, and reviews examples from several fields (e.g. recognizing the typical background instead of the object).
+- **Key result:** Shortcut learning is a common failure mode across deep learning. Models should be tested on out-of-distribution data, and their decisions should be examined, not only their scores.
+- **Relevance to this project:** In xBD, damage levels are strongly linked to the disaster type (EDA: 70% of minor damage comes from wind events, 68% of major damage from flooding). The model might therefore learn disaster context such as flood water or burn scars instead of the damage of the building itself. We use Grad-CAM to check this, and the Türkiye transfer (Phase 9, optional) would act as an out-of-distribution test.
+
+### 🟨 Petsiuk, Das & Saenko (2018) — RISE: Randomized Input Sampling for Explanation of Black-box Models
+- **Problem:** Explanation maps are difficult to evaluate objectively, since there is no ground truth for "where the model looks".
+- **Method:** Besides the RISE explanation method itself, the paper introduces the deletion and insertion metrics: the most important pixels according to the map are removed (or added) step by step, and the change of the class score is measured; the area under this curve summarizes the faithfulness of the map.
+- **Key result:** A faithful explanation causes a fast drop of the class score in the deletion test (low area under the curve).
+- **Relevance to this project:** Basis of the optional deletion test (bonus): if Grad-CAM highlights the regions the model really uses, masking them should lower the predicted damage score more than masking random regions.
+
+**Library:** `pytorch-grad-cam` (Gildenblat et al., https://github.com/jacobgil/pytorch-grad-cam), package `grad-cam` in `requirements.txt`.
 
 ---
 
@@ -120,17 +136,16 @@ Status: ⬜ not read · 🟨 skimmed (pass 1) · ✅ read and noted
 |---|---|
 | Use of the xBD dataset and its damage scale | Gupta et al. (2019) |
 | xView2 score as the main evaluation metric | Gupta et al. (2019), Weber & Kané (2020) |
-| Siamese encoder with shared weights | Weber & Kané (2020) |
-| Fusion of pre/post features (concat / difference) | Weber & Kané (2020) |
-| Focal Loss (class imbalance) | Weber & Kané (2020) |
-| Early stopping with patience | Weber & Kané (2020) |
 | U-Net decoder | Ronneberger et al. (2015) |
 | ResNet34 encoder (ImageNet pretrained) | He et al. (2016) |
 | Siamese encoder with shared weights | Daudt et al. (2018), Weber & Kané (2020) |
 | Fusion of pre/post features (concat / difference) | Daudt et al. (2018), Weber & Kané (2020) |
 | Focal Loss (class imbalance) | Lin et al. (2017), Weber & Kané (2020) |
 | Dice Loss | Milletari et al. (2016) |
+| Class-weighted cross-entropy | Weber & Kané (2020) |
 | Early stopping with patience | Prechelt (1998), Weber & Kané (2020) |
 | Stratified train/val/test split | Kohavi (1995) |
-| Grad-CAM for segmentation | |
-| Critical evaluation of saliency maps (deletion test) | |
+| Grad-CAM as the XAI method | Selvaraju et al. (2017), Adebayo et al. (2018) |
+| Grad-CAM for segmentation (target = class scores over the predicted region) | Vinogradova et al. (2020) |
+| Shortcut learning check | Geirhos et al. (2020), Selvaraju et al. (2017) |
+| Critical evaluation of saliency maps (deletion test) | Adebayo et al. (2018), Petsiuk et al. (2018) |
