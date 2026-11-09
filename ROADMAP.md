@@ -201,7 +201,7 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 - [ ] ~~Olay (event) bazında kırılım~~ → yapılmadı, afet türü kırılımı yeterli
 - [ ] Nitel sonuçlar: iyi ve kötü tahmin örnekleri → Faz 8'deki Grad-CAM görselleriyle birlikte yapılacak (aynı şablon)
 
-**Çıktı:** `src/evaluate.py`, `notebooks/07a_evaluate_fd.ipynb`, `notebooks/07b_evaluate_ce.ipynb`, `reports/test_results.md`, `reports/test_results_{fd,ce}.json`, `reports/figures/test_confusion_{fd,ce}.png`
+**Çıktı:** `src/evaluate.py`, `notebooks/07a_evaluate_fd.ipynb`, `notebooks/07b_evaluate_ce.ipynb`, `reports/test_results.md`, `reports/test_results_{fd,ce}.json`, `reports/figures/confusion_matrices/test_confusion_{fd,ce}.png`
 **Bitirme kriteri:** Test sonuçları tablo ve figürlerle raporlanmış. (`best.pt`'nin GitHub Release'e yüklenmesi → Faz 10)
 
 ---
@@ -210,19 +210,20 @@ Afet öncesi (pre) ve sonrası (post) uydu görüntü çiftlerinden, piksel düz
 
 **Hedef:** "Model kararını görüntünün neresine bakarak veriyor?" sorusunu görsel ve yorumla cevaplamak.
 
-- [ ] Literatür: Grad-CAM, Grad-CAM++, segmentasyon için Grad-CAM, Sanity Checks (Faz 1'den taşındı) → `docs/literature.md` E bölümü
-- [ ] **Wrapper:** Siamese modeli tek girdi (6 kanal: pre+post) alacak şekilde sar
-- [ ] **Hedef:** `SemanticSegmentationTarget` — c sınıfının tahmin maskesi bölgesindeki logit toplamı
-- [ ] **Katman karşılaştırması:** encoder son bloğu vs. decoder katmanı
-- [ ] **Görsel şablonu:** Pre | Post | Gerçek maske | Tahmin | Grad-CAM (sınıf bazında)
-- [ ] Her hasar sınıfı için örnekler
-- [ ] **Doğru vs. yanlış** tahmin örnekleri + kısa yorumlar
-- [ ] **Baseline vs. Siamese** Grad-CAM karşılaştırması (pre görüntünün modele ne kattığını göstermek için)
-- [ ] **Kısayol öğrenme kontrolü:** Model hasarlı binaya mı, yoksa afet izine (sel suyu, kül) mı bakıyor? (EDA: minor ← %70 rüzgâr, major ← %68 sel)
-- [ ] (Bonus) Grad-CAM++ ve deletion testi (önemli bölge maskelenince skor düşüşü)
+- [x] Literatür: Grad-CAM, Grad-CAM++, Seg-Grad-CAM, Sanity Checks, Shortcut Learning, RISE (deletion testi) → `docs/literature.md` E bölümü
+- [x] **Model:** hocanın istediği Siamese concat **Focal + Dice** (40 epoch); karşılaştırma için baseline (Focal + Dice)
+- [x] **Wrapper** (`SiameseWrapper`): 6 kanallı paketi (pre + post) açıp modele iki girdi olarak veriyor; baseline için de çalışıyor
+- [x] **Hedef** (`make_target`, Seg-Grad-CAM): c sınıfının **tahmin edildiği** piksellerdeki c logitlerinin toplamı. Model c'yi hiç tahmin etmediyse harita boş → sadece c'nin tahmin edildiği görüntüler kullanıldı
+- [x] **Katman seçimi:** encoder kullanılmadı (ortak encoder pre ve post için iki kez çalışıyor, ikisini birlikte görmüyor). Decoder blokları 0, 1, 2 karşılaştırıldı → üçünde de dikkat binalarda; dengeli olduğu için **`decoder.blocks[1]`** (128 × 128) seçildi
+- [x] **Görsel şablonu:** Pre | Post | Gerçek maske | Tahmin | Grad-CAM (`src/xai/plots.py`)
+- [x] Örnekler: yangın/destroyed (doğru), rüzgâr/destroyed (doğru), sel/major (yıkılmış binalara "major" diyor, yanlış)
+- [ ] ~~Her hasar sınıfı için ayrı görsel örnek~~ → minor ve no damage için görsel yok; minor sayısal ölçümde var (rüzgâr/minor)
+- [x] **Kısayol öğrenme kontrolü (sayısal):** "binalardaki ısı" ölçüsü, 5 grup × 20 test görüntüsü. Sel için özel bir kısayol **bulunmadı**; tsunamide model binadan çok çevreye bakıyor (ısı/alan ≈ 0,8)
+- [x] **Baseline vs. Siamese:** aynı görüntülerde ölçüldü. Baseline her grupta binalara daha çok bakıyor; Siamese çevredeki değişimi de kullanıyor
+- [ ] ~~(Bonus) Grad-CAM++, deletion testi, CE modeliyle karşılaştırma~~ → yapılmadı, raporda gelecek çalışma
 
-**Çıktı:** `src/xai/gradcam.py`, `src/xai/wrappers.py`, `notebooks/08_gradcam_xai.ipynb`, `reports/figures/xai_*`
-**Bitirme kriteri:** Raporun XAI bölümü için en az 8–10 yorumlanmış figür hazır.
+**Çıktı:** `src/xai/gradcam.py`, `src/xai/plots.py`, `notebooks/08_gradcam.ipynb`, `reports/xai.md`, `reports/xai_results.json`, `reports/figures/gradcam/gradcam_*.png` (6 figür)
+**Bitirme kriteri:** Raporun XAI bölümü için yorumlanmış figürler ve sayısal kısayol kontrolü hazır.
 
 > 🏁 **Ana gövde tamam.** Faz 8 bitince danışmanın tüm şartları karşılanmış olur ve `v0.8-core` tag'i atılır.
 > **Karar noktası:** Teslime yeterli süre kaldıysa → Faz 9. Kalmadıysa → doğrudan Faz 10; Türkiye çalışması raporda "Gelecek Çalışmalar" bölümüne yazılır.

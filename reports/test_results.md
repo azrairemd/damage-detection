@@ -38,7 +38,7 @@ The CE model is the best in all four damage classes, by +0.07 to +0.18 over the 
 
 ## 3. Confusion matrices (test set, row-normalized)
 
-![Test confusion matrices](figures/test_confusion_fd.png)
+![Test confusion matrices](figures/confusion_matrices/test_confusion_fd.png)
 
 Each row shows how the pixels of one true class were predicted (in % of that class).
 
@@ -86,7 +86,7 @@ Same architecture (Siamese U-Net, concat), same data and same training settings;
 | Test F1_loc | **0.793** | 0.784 |
 | Test F1_dmg | 0.536 | **0.692** |
 
-![Confusion matrices: Focal + Dice vs. CE](figures/test_confusion_ce.png)
+![Confusion matrices: Focal + Dice vs. CE](figures/confusion_matrices/test_confusion_ce.png)
 
 | True class | Correct: Focal + Dice | Correct: CE | Predicted as background: Focal + Dice → CE |
 |---|---|---|---|
