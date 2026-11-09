@@ -77,3 +77,26 @@ def measure_groups(cam, wrapper, dataset, groups, device, n_images=20, min_pixel
             results[(t, c)].append((i, heat, area))
 
     return results
+
+# Measure GradCAM heatmap values for specific pairs of disaster types and categories in the dataset
+def measure_pairs(cam, wrapper, dataset, results, device, min_pixels=1000):
+    new_results = {}
+
+    for (t, c) in results:
+        new_results[(t, c)] = []
+
+        for (i, _, _) in results[(t, c)]:
+            pre, post, mask = dataset[i]
+            x = torch.cat([pre, post], dim=0).unsqueeze(0).to(device)
+            mask = mask.numpy()
+
+            with torch.no_grad():
+                pred = wrapper(x).argmax(dim=1)[0]
+            if (pred == c).sum().item() < min_pixels:
+                continue
+
+            heatmap, _ = compute_gradcam(cam, wrapper, x, c)
+            heat, area = heat_on_buildings(heatmap, mask)
+            new_results[(t, c)].append((i, heat, area))
+
+    return new_results
