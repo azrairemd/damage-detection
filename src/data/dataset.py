@@ -7,18 +7,21 @@ from torch.utils.data import Dataset
 import cv2
 from src.data.masks import get_mask_path
 from src.data.xbd import load_pair
+from src.data.patch import make_patch
 
 # ImageNet mean and standard deviation (the encoder was pretrained with them)
 MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
 class XBDDataset(Dataset):
-    def __init__(self, split_csv, xbd_root, mask_root, train=True, crop_size=512):
+    def __init__(self, split_csv, xbd_root, mask_root, train=True, crop_size=512, patch_prob=0.0, patch_size=256):
         self.pairs = pd.read_csv(split_csv)
         self.xbd_root = xbd_root
         self.mask_root = mask_root
         self.train = train
         self.crop_size = crop_size
+        self.patch_prob = patch_prob
+        self.patch_size = patch_size
 
     def __len__(self):
         return len(self.pairs)
@@ -35,15 +38,19 @@ class XBDDataset(Dataset):
 
         # augmentation for training
         if self.train:
-            # random crop
-            size = self.crop_size
-            height, width = mask.shape
-            top = random.randint(0, height - size)
-            left = random.randint(0, width - size)
+            # patch
+            if random.random() < self.patch_prob:
+                pre, post, mask = make_patch(pre, post, mask, patch_size=self.patch_size, out_size=self.crop_size)
+            else:
+            # normal crop
+               size = self.crop_size
+               height, width = mask.shape
+               top = random.randint(0, height - size)
+               left = random.randint(0, width - size)
 
-            pre = pre[top:top + size, left:left + size]
-            post = post[top:top + size, left:left + size]
-            mask = mask[top:top + size, left:left + size]
+               pre = pre[top:top + size, left:left + size]
+               post = post[top:top + size, left:left + size]
+               mask = mask[top:top + size, left:left + size]
 
             # random reflection and rotation
             if random.random() < 0.5:
