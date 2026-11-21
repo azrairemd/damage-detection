@@ -44,6 +44,12 @@ def validate(model, loader, device):
 
     return metric.compute_f1()
 
+# with DataParallel the real model is inside model.module
+def unwrap(model):
+    if isinstance(model, torch.nn.DataParallel):
+        return model.module
+    return model
+
 # log 
 def append_log(path, row):
     write_header = not os.path.exists(path)
@@ -70,7 +76,7 @@ def fit(model, train_loader, val_loader, loss_fn, optimizer, device, max_epochs,
 
     if resume and os.path.exists(last_path):
         checkpoint = torch.load(last_path, map_location=device)
-        model.load_state_dict(checkpoint["model"])
+        unwrap(model).load_state_dict(checkpoint["model"])
         optimizer.load_state_dict(checkpoint["optimizer"])
         start_epoch = checkpoint["epoch"] + 1
         best_score = checkpoint["best_score"]
@@ -98,13 +104,13 @@ def fit(model, train_loader, val_loader, loss_fn, optimizer, device, max_epochs,
         if val["score"] > best_score:
             best_score = val["score"]
             epochs_without_improvement = 0
-            torch.save(model.state_dict(), os.path.join(out_dir, "best.pt"))
+            torch.save(unwrap(model).state_dict(), os.path.join(out_dir, "best.pt"))
             print("  -> new best model saved")
         else:
             epochs_without_improvement += 1
 
         torch.save({
-            "model": model.state_dict(),
+            "model": unwrap(model).state_dict(),
             "optimizer": optimizer.state_dict(),
             "epoch": epoch,
             "best_score": best_score,
