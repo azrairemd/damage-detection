@@ -1,6 +1,6 @@
-"""Training and validation loops."""
 import os
 import csv
+import time
 import torch
 from src.metrics.xview2 import XView2Metric
 
@@ -60,7 +60,7 @@ def append_log(path, row):
         writer.writerow(row)
 
 # early stopping (patience = 20%)
-def fit(model, train_loader, val_loader, loss_fn, optimizer, device, max_epochs, out_dir, resume=False):
+def fit(model, train_loader, val_loader, loss_fn, optimizer, device, max_epochs, out_dir, resume=False, time_limit_hours=None):
     os.makedirs(out_dir, exist_ok=True)
     last_path = os.path.join(out_dir, "last.pt")
 
@@ -82,6 +82,8 @@ def fit(model, train_loader, val_loader, loss_fn, optimizer, device, max_epochs,
         best_score = checkpoint["best_score"]
         epochs_without_improvement = checkpoint["epochs_without_improvement"]
         print(f"Resuming from epoch {start_epoch}")
+
+    start_time = time.time()
 
     for epoch in range(start_epoch, max_epochs + 1):
         train_loss = train_one_epoch(model, train_loader, loss_fn, optimizer, device, scaler)
@@ -120,5 +122,13 @@ def fit(model, train_loader, val_loader, loss_fn, optimizer, device, max_epochs,
         if epochs_without_improvement >= patience:
             print(f"Early stopping: no improvement for {patience} epochs")
             break
+
+        # stop before the Kaggle session limit
+        if time_limit_hours is not None:
+            elapsed_hours = (time.time() - start_time) / 3600
+            hours_per_epoch = elapsed_hours / (epoch - start_epoch + 1)
+            if elapsed_hours + hours_per_epoch > time_limit_hours:
+                print(f"Time limit reached after epoch {epoch}: resume in a new session")
+                break
 
     return best_score
